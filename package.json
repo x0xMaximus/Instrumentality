@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "csv": "*",
+    "robotjs": "https://github.com/GRL/robotjs/tarball/master"
+  }
+}
