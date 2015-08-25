@@ -1,4 +1,8 @@
+var fs = require('fs');
 var robot = require("robotjs");
+var parse = require('csv-parse');
+var _ = require("underscore")
+require('should');
 
 var screen = robot.getScreenSize()
 
@@ -7,45 +11,13 @@ var chrome_url_pos = {x: 189, y: 77}
 
 var debug = false;
 
-var normal_sites = [
-  {
-    'url': 'http://ebay.com',
-    'duration': 10,
-  },
-  {
-    'url': 'http://amazon.com',
-    'duration': 10,
-  },
-  {
-    'url': 'http://reddit.com',
-    'duration': 10,
-  },
-  {
-    'url': 'http://imdb.com',
-    'duration': 10,
-  },
-  {
-    'url': 'http://nytimes.com',
-    'duration': 10,
-  },
-  {
-    'url': 'http://craigslist.org',
-    'duration': 10,
-  },
-];
-
-var object_sites = [
-  {
-    'url': 'http://foxnews.com',
-    'duration': 10,
-    'quiet': false,
-  },
-  {
-    'url': 'http://playboy.com',
-    'duration': 10,
-    'quiet': true,
-  }
-];
+var parser = parse({columns: true, auto_parse: true}, function(err, data){
+  _.each(data, function(obj) {
+    obj['quiet'] =  obj['quiet']==='true'
+  });
+  main(data);
+});
+fs.createReadStream(__dirname+'/data/data.csv').pipe(parser);
 
 function move_mouse(x, y){
   if(debug){
@@ -66,6 +38,10 @@ function goto_url(url){
 
   robot.typeString(url);
   robot.keyTap('enter');
+}
+
+function scroll(direction) {
+  direction = typeof direction !== 'undefined' ? seconds : 60;
 }
 
 function open_incognito(url){
@@ -117,26 +93,37 @@ function browse(seconds, quiet) {
 
 }
 
-var counter = 0;
-while(true) {
-  if(counter==0){
-    open_chrome();
+function main(sites) {
+
+  var counter = 0;
+  while(true) {
+    if(counter==0){
+      open_chrome();
+    }
+
+    if(counter < 2) {
+      //-- Public
+      var basic_sites = _.filter(sites, {kind:1})
+      var site = basic_sites[Math.floor(Math.random() * basic_sites.length)];
+      console.log(site);
+
+      goto_url(site.url);
+      browse(site.duration, false);
+      counter++;
+
+    } else {
+      //-- Private
+      var object_sites = _.filter(sites, {kind:0})
+      var site = object_sites[Math.floor(Math.random() * object_sites.length)];
+
+      /*
+      open_incognito(site.url);
+      */
+      browse(site.duration, false);
+      quit_chrome();
+      counter = 0;
+
+    }
   }
 
-  if(counter < 2) {
-    //-- Public
-    var site = normal_sites[Math.floor(Math.random() * normal_sites.length)];
-    goto_url(site.url);
-    browse(site.duration, false);
-    counter++;
-
-  } else {
-    //-- Private
-    var site = object_sites[Math.floor(Math.random() * object_sites.length)];
-    open_incognito(site.url);
-    browse(site.duration, false);
-    quit_chrome();
-    counter = 0;
-
-  }
 }

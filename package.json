@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "csv": "*",
+    "csv-parse": "*",
     "robotjs": "https://github.com/GRL/robotjs/tarball/master"
   }
 }
