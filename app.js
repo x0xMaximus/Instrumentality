@@ -6,18 +6,42 @@ require('should');
 
 var screen = robot.getScreenSize()
 
-var pos = {
-  dock_icon: {x: 915, y: 1034 };
-  url: {x: 400, y: 77}
-  browse: {t: 100, r: 1600, b: 970, l: 285};
+var debug = true;
+
+//-- For mapping new screen resolutions
+while(false) { var pos = robot.getMousePos(); console.log(pos); }
+
+if(debug){
+  var pos = {
+    dock_icon: {x: 445, y: 886 },
+    incognito: {x: 510, y: 698},
+    url: {x: 400, y: 77},
+
+    menu_name: {x: 70, y: 10},
+    menu_close: {x: 150, y: 315},
+
+    browse: {
+      top_left: {x: 150, y: 100},
+      bottom_right: {x: 1050, y: 800},
+    }
+  }
+} else {
+  var pos = {
+    dock_icon: {x: 445, y: 886 },
+    incognito: {x: 510, y: 698},
+    url: {x: 400, y: 77},
+
+    menu_name: {x: 70, y: 10},
+    menu_close: {x: 150, y: 315},
+
+    browse: {
+      top_left: {x: 150, y: 100},
+      bottom_right: {x: 1050, y: 800},
+    }
+  }
 }
 
-
-var pos = robot.getMousePos();
-console.log(pos);
-
-var debug = false;
-
+//-- Load the CSV Data and start the loop
 var parser = parse({columns: true, auto_parse: true}, function(err, data){
   _.each(data, function(obj) {
     obj['quiet'] =  obj['quiet']==='true'
@@ -26,60 +50,57 @@ var parser = parse({columns: true, auto_parse: true}, function(err, data){
 });
 fs.createReadStream(__dirname+'/data/data.csv').pipe(parser);
 
+//-- Abstract way to jump the mouse to test faster
 function move_mouse(x, y){
-  if(debug){
-    robot.moveMouse(x, y);
-  } else {
-    robot.moveMouseSmooth(x, y);
-  }
+  robot.moveMouseSmooth(x, y);
 }
 
+//
+// Repeatable Actions
+//
 function open_chrome(){
-  move_mouse(chrome_dock_pos.x, chrome_dock_pos.y);
+  move_mouse(pos.dock_icon.x, pos.dock_icon.y);
   robot.mouseClick();
+  // (TODO) Sleep for a minute to let it application load
 }
 
-function goto_url(url){
-  move_mouse(chrome_url_pos.x, chrome_url_pos.y);
+function goto_url(url, counter){
+  move_mouse(pos.url.x, pos.url.y);
 
-  robot.mouseClick('left');
-
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
-  robot.keyTap('delete');
+  if(counter == 0) {
+    robot.keyTap('delete');
+  }
+  if(counter == 1) {
+    robot.mouseClick('left');
+    robot.keyTap('delete');
+  }
 
   robot.typeString(url);
   robot.keyTap('enter');
 }
 
 function scroll(direction) {
-  direction = typeof direction !== 'undefined' ? seconds : 60;
+  if(direction == 'up') {
+    robot.keyTap('pageup');
+  } else {
+    robot.keyTap('pagedown');
+  }
 }
 
 function open_incognito(url){
-  move_mouse(chrome_dock_pos.x, chrome_dock_pos.y);
+  move_mouse(pos.dock_icon.x, pos.dock_icon.y);
   robot.mouseClick('right');
-  move_mouse(chrome_dock_pos.x+50, chrome_dock_pos.y-175);
+
+  move_mouse(pos.incognito.x, pos.incognito.y);
   robot.mouseClick();
   goto_url(url);
 }
 
 function quit_chrome() {
-  move_mouse(80, 20);
+  move_mouse(pos.menu_name.x, pos.menu_name.y);
   robot.mouseClick();
 
-  move_mouse(80, 320);
+  move_mouse(pos.menu_close.x, pos.menu_close.y);
   robot.mouseClick();
 }
 
@@ -88,19 +109,19 @@ function browse(seconds, quiet) {
   quiet = typeof quiet !== 'undefined' ? quiet : false;
   var started = Date.now();
 
-
   while ( Date.now() - started < seconds*1000 ) {
-    var x = Math.floor(Math.random() * dimensions.right-dimensions.left) + dimensions.left;
-    var y = Math.floor(Math.random() * dimensions.bottom-dimensions.top) + dimensions.top;
+    var x = Math.floor(Math.random() * (pos.browse.bottom_right.x-pos.browse.top_left.x)) + pos.browse.top_left.x;
+    var y = Math.floor(Math.random() * (pos.browse.bottom_right.y-pos.browse.top_left.y)) + pos.browse.top_left.y;
     move_mouse(x, y);
 
     if(!quiet) {
-      if(Math.random() < .1) {
-        robot.keyTap('pagedown');
-      }
 
-      if(Math.random() < .1) {
-        robot.keyTap('pageup');
+      if(Math.random() < .25) {
+        if(Math.random() < .25) {
+          scroll('up');
+        } else {
+          scroll();
+        }
       }
 
       if(Math.random() < 0.3) {
@@ -129,13 +150,14 @@ function main(sites) {
       var basic_sites = _.filter(sites, {kind:1})
       var site = basic_sites[Math.floor(Math.random() * basic_sites.length)];
 
-      goto_url(site.url);
+      goto_url(site.url, counter);
       browse(site.duration*1.5, false);
       counter++;
 
     } else {
       //-- Private
-      var object_sites = _.filter(sites, {kind:0})
+      //var object_sites = _.filter(sites, {kind:0})
+      var object_sites = _.filter(sites, {kind:1})
       var site = object_sites[Math.floor(Math.random() * object_sites.length)];
 
       open_incognito(site.url);
