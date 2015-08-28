@@ -6,8 +6,12 @@ require('should');
 
 var screen = robot.getScreenSize()
 
-var chrome_dock_pos = {x: screen.width/3, y: screen.height-20}
-var chrome_url_pos = {x: 189, y: 77}
+var chrome_dock_pos = {x: 915, y: 1034 };
+var chrome_url_pos = {x: 400, y: 77}
+var browse_space = {t: 100, r: 1600, b: 970, l: 285};
+
+var pos = robot.getMousePos();
+console.log(pos);
 
 var debug = false;
 
@@ -34,7 +38,23 @@ function open_chrome(){
 
 function goto_url(url){
   move_mouse(chrome_url_pos.x, chrome_url_pos.y);
-  //robot.mouseClick('left', true);
+
+  robot.mouseClick('left');
+
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
+  robot.keyTap('delete');
 
   robot.typeString(url);
   robot.keyTap('enter');
@@ -65,31 +85,31 @@ function browse(seconds, quiet) {
   quiet = typeof quiet !== 'undefined' ? quiet : false;
   var started = Date.now();
 
-  var dimensions = {
-    top: 0+400,
-    right: screen.width-400,
-    bottom: screen.height-1000,
-    left: 400
-  };
 
   while ( Date.now() - started < seconds*1000 ) {
-    var x = Math.floor(Math.random() * dimensions.right) + dimensions.left;
-    var y = Math.floor(Math.random() * dimensions.bottom) + dimensions.top;
+    var x = Math.floor(Math.random() * dimensions.right-dimensions.left) + dimensions.left;
+    var y = Math.floor(Math.random() * dimensions.bottom-dimensions.top) + dimensions.top;
     move_mouse(x, y);
 
     if(!quiet) {
-      if(Math.random() < 0.5) {
-        var mouse = robot.getMousePos();
-        var hex = robot.getPixelColor(mouse.x, mouse.y);
-        console.log("#" + hex + " at x:" + mouse.x + " y:" + mouse.y);
-        if(hex == '0000ee') {
-          robot.mouseClick();
-        }
+      if(Math.random() < .1) {
+        robot.keyTap('pagedown');
+      }
+
+      if(Math.random() < .1) {
+        robot.keyTap('pageup');
+      }
+
+      if(Math.random() < 0.3) {
+        //var mouse = robot.getMousePos();
+        //var hex = robot.getPixelColor(mouse.x, mouse.y);
+        //console.log("#" + hex + " at x:" + mouse.x + " y:" + mouse.y);
+        //if(hex == '0000ee') {
+        robot.mouseClick();
+
       }
     }
   }
-
-  robot.keyToggle('w', 'command');
 
 }
 
@@ -105,10 +125,9 @@ function main(sites) {
       //-- Public
       var basic_sites = _.filter(sites, {kind:1})
       var site = basic_sites[Math.floor(Math.random() * basic_sites.length)];
-      console.log(site);
 
       goto_url(site.url);
-      browse(site.duration, false);
+      browse(site.duration*1.5, false);
       counter++;
 
     } else {
@@ -116,10 +135,8 @@ function main(sites) {
       var object_sites = _.filter(sites, {kind:0})
       var site = object_sites[Math.floor(Math.random() * object_sites.length)];
 
-      /*
       open_incognito(site.url);
-      */
-      browse(site.duration, false);
+      browse(site.duration*2.5, false);
       quit_chrome();
       counter = 0;
 
