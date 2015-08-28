@@ -6,9 +6,12 @@ require('should');
 
 var screen = robot.getScreenSize()
 
-var chrome_dock_pos = {x: 915, y: 1034 };
-var chrome_url_pos = {x: 400, y: 77}
-var browse_space = {t: 100, r: 1600, b: 970, l: 285};
+var pos = {
+  dock_icon: {x: 915, y: 1034 };
+  url: {x: 400, y: 77}
+  browse: {t: 100, r: 1600, b: 970, l: 285};
+}
+
 
 var pos = robot.getMousePos();
 console.log(pos);
