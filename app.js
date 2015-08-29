@@ -6,7 +6,7 @@ require('should');
 
 var screen = robot.getScreenSize()
 
-var debug = true;
+var debug = false;
 
 //-- For mapping new screen resolutions
 while(false) { var pos = robot.getMousePos(); console.log(pos); }
@@ -27,16 +27,16 @@ if(debug){
   }
 } else {
   var pos = {
-    dock_icon: {x: 445, y: 886 },
-    incognito: {x: 510, y: 698},
-    url: {x: 400, y: 77},
+    dock_icon: {x: 915, y: 1035 },
+    incognito: {x: 985, y: 865},
+    url: {x: 900, y: 75},
 
-    menu_name: {x: 70, y: 10},
-    menu_close: {x: 150, y: 315},
+    menu_name: {x: 80, y: 10},
+    menu_close: {x: 180, y: 315},
 
     browse: {
-      top_left: {x: 150, y: 100},
-      bottom_right: {x: 1050, y: 800},
+      top_left: {x: 100, y: 100},
+      bottom_right: {x: 1400, y: 975},
     }
   }
 }
@@ -156,12 +156,11 @@ function main(sites) {
 
     } else {
       //-- Private
-      //var object_sites = _.filter(sites, {kind:0})
-      var object_sites = _.filter(sites, {kind:1})
+      var object_sites = _.filter(sites, {kind:0})
       var site = object_sites[Math.floor(Math.random() * object_sites.length)];
 
       open_incognito(site.url);
-      browse(site.duration*2.5, false);
+      browse(site.duration*3.5, false);
       quit_chrome();
       counter = 0;
 
