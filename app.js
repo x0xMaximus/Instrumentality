@@ -151,7 +151,7 @@ function main(sites) {
       var site = basic_sites[Math.floor(Math.random() * basic_sites.length)];
 
       goto_url(site.url, counter);
-      browse(site.duration*1.5, false);
+      browse(site.duration, false);
       counter++;
 
     } else {
@@ -160,7 +160,7 @@ function main(sites) {
       var site = object_sites[Math.floor(Math.random() * object_sites.length)];
 
       open_incognito(site.url);
-      browse(site.duration*3.5, false);
+      browse(site.duration*4, false);
       quit_chrome();
       counter = 0;
 
